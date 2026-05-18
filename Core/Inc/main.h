@@ -49,6 +49,12 @@ extern "C" {
 
 /* USER CODE END EM */
 
+/* Exported variables --------------------------------------------------------*/
+extern I2C_HandleTypeDef hi2c1;
+extern UART_HandleTypeDef huart1;
+extern UART_HandleTypeDef huart2;
+
+
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
 
@@ -59,6 +65,14 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define BOARD_LED_Pin GPIO_PIN_13
 #define BOARD_LED_GPIO_Port GPIOC
+#define OLED_SCL_Pin GPIO_PIN_5
+#define OLED_SCL_GPIO_Port GPIOA
+#define OLED_SDA_Pin GPIO_PIN_7
+#define OLED_SDA_GPIO_Port GPIOA
+#define MPU6050_scl_Pin GPIO_PIN_6
+#define MPU6050_scl_GPIO_Port GPIOB
+#define MPU6050_sda_Pin GPIO_PIN_7
+#define MPU6050_sda_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 
