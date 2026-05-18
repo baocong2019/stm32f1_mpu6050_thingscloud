@@ -13,3 +13,55 @@
 # eide template
 *.ept
 *.eide-template
+
+
+# ======================================
+# STM32 / EIDE 工程专用忽略规则
+# ======================================
+
+# EIDE 插件配置文件
+.eide/
+.pack/
+
+# VSCode 配置文件
+.vscode/
+
+# 编译产物目录
+build/
+Debug/
+Release/
+*.bin
+*.hex
+*.elf
+*.axf
+*.map
+*.o
+*.obj
+*.d
+*.su
+*.lst
+*.lnp
+*.crf
+*.dep
+*.htm
+*.sct
+*.tra
+
+# CubeMX 临时文件
+.mxproject
+*.ioc.backup
+
+# MDK-ARM 工程临时文件
+MDK-ARM/
+*.uvprojx.bak
+*.uvoptx.bak
+
+# 系统/编辑器文件
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Git 临时文件
+.git/
