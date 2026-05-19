@@ -40,6 +40,7 @@
 #include "main.h"
 #include <stdio.h>
 #include <stdarg.h>
+extern UART_HandleTypeDef huart2; /* use USART2 for debug output */
 
 /**
  * @brief  interface iic bus init
@@ -144,8 +145,8 @@ void ssd1306_interface_debug_print(const char *const fmt, ...)
     va_start(args, fmt);
     vsnprintf(buf, sizeof(buf), fmt, args);
     va_end(args);
-    /* Retarget to ITM/semihosting/USART as configured; fallback to HAL debug (if any) */
-    printf("%s", buf);
+    /* Send debug messages over USART2 (same debug port used for MPU6050) */
+    (void)HAL_UART_Transmit(&huart2, (uint8_t *)buf, (uint16_t)strlen(buf), 1000);
 }
 
 /**

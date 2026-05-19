@@ -49,12 +49,6 @@ extern "C" {
 
 /* USER CODE END EM */
 
-/* Exported variables --------------------------------------------------------*/
-extern I2C_HandleTypeDef hi2c1;
-extern UART_HandleTypeDef huart1;
-extern UART_HandleTypeDef huart2;
-
-
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
 

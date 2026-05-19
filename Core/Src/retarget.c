@@ -4,6 +4,8 @@
 
 #include "main.h"
 
+extern UART_HandleTypeDef huart2;
+
 int __io_putchar(int ch)
 {
     uint8_t c = (uint8_t)ch;
