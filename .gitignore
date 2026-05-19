@@ -22,6 +22,8 @@
 # EIDE 插件配置文件
 .eide/
 .pack/
+.pack/
+*.ps1
 
 # VSCode 配置文件
 .vscode/
