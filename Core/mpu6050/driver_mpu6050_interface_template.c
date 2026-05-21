@@ -92,21 +92,21 @@ uint8_t mpu6050_interface_iic_read(uint8_t addr, uint8_t reg, uint8_t *buf, uint
 {
     /* Instrumented HAL I2C memory read for debugging: print addr/reg/len/status and bytes */
     HAL_StatusTypeDef status = HAL_I2C_Mem_Read(&hi2c1, (uint16_t)addr, (uint16_t)reg, I2C_MEMADD_SIZE_8BIT, buf, len, 1000);
-    mpu6050_interface_debug_print("i2c read addr=0x%02X reg=0x%02X len=%d status=%d\n", addr, reg, len, status);
+    //mpu6050_interface_debug_print("i2c read addr=0x%02X reg=0x%02X len=%d status=%d\n", addr, reg, len, status);
     if (status == HAL_OK)
     {
-        /* dump bytes */
-        char dump[256];
-        int pos = 0;
-        int i;
-        pos += snprintf(dump + pos, sizeof(dump) - pos, "i2c data:");
-        for (i = 0; i < (int)len && pos < (int)sizeof(dump) - 4; i++)
-        {
-            pos += snprintf(dump + pos, sizeof(dump) - pos, " %02X", buf[i]);
-        }
-        pos += snprintf(dump + pos, sizeof(dump) - pos, "\n");
-        mpu6050_interface_debug_print("%s", dump);
-        return 0;
+        // /* dump bytes */
+        // char dump[256];
+        // int pos = 0;
+        // int i;
+        // pos += snprintf(dump + pos, sizeof(dump) - pos, "i2c data:");
+        // for (i = 0; i < (int)len && pos < (int)sizeof(dump) - 4; i++)
+        // {
+        //     pos += snprintf(dump + pos, sizeof(dump) - pos, " %02X", buf[i]);
+        // }
+        // pos += snprintf(dump + pos, sizeof(dump) - pos, "\n");
+        // mpu6050_interface_debug_print("%s", dump);
+        // return 0;
     }
     else
     {
@@ -129,20 +129,20 @@ uint8_t mpu6050_interface_iic_write(uint8_t addr, uint8_t reg, uint8_t *buf, uin
 {
     /* Instrumented HAL I2C memory write for debugging: print addr/reg/len/status and written bytes */
     HAL_StatusTypeDef status = HAL_I2C_Mem_Write(&hi2c1, (uint16_t)addr, (uint16_t)reg, I2C_MEMADD_SIZE_8BIT, buf, len, 1000);
-    mpu6050_interface_debug_print("i2c write addr=0x%02X reg=0x%02X len=%d status=%d\n", addr, reg, len, status);
+   // mpu6050_interface_debug_print("i2c write addr=0x%02X reg=0x%02X len=%d status=%d\n", addr, reg, len, status);
     if (status == HAL_OK)
     {
-        char dump[256];
-        int pos = 0;
-        int i;
-        pos += snprintf(dump + pos, sizeof(dump) - pos, "i2c write data:");
-        for (i = 0; i < (int)len && pos < (int)sizeof(dump) - 4; i++)
-        {
-            pos += snprintf(dump + pos, sizeof(dump) - pos, " %02X", buf[i]);
-        }
-        pos += snprintf(dump + pos, sizeof(dump) - pos, "\n");
-        mpu6050_interface_debug_print("%s", dump);
-        return 0;
+        // char dump[256];
+        // int pos = 0;
+        // int i;
+        // pos += snprintf(dump + pos, sizeof(dump) - pos, "i2c write data:");
+        // for (i = 0; i < (int)len && pos < (int)sizeof(dump) - 4; i++)
+        // {
+        //     pos += snprintf(dump + pos, sizeof(dump) - pos, " %02X", buf[i]);
+        // }
+        // pos += snprintf(dump + pos, sizeof(dump) - pos, "\n");
+        // mpu6050_interface_debug_print("%s", dump);
+        // return 0;
     }
     else
     {

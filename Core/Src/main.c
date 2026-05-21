@@ -29,6 +29,8 @@
 /* MPU6050 basic example header */
 #include "../mpu6050/driver_mpu6050_basic.h"
 #include <stdlib.h>
+#include "../thingscloud/thingscloud.h"
+#include "../thingscloud/esp8266_at.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -52,32 +54,123 @@
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c1;
 
+TIM_HandleTypeDef htim2;
+
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
+DMA_HandleTypeDef hdma_usart1_rx;
 
 /* USER CODE BEGIN PV */
 char buf[80];
 int value = 123;
-/* buffers for MPU6050 converted data */
 float mpu_g[3]; /* acceleration, g */
 float mpu_dps[3]; /* gyroscope, degrees/s */
 uint32_t led_cnt=0;
-
+int16_t accel_raw[3] = {0};
+int16_t gyro_raw[3] = {0};
+float temp_deg = 0;
+int temp_tenth = 0;
+volatile uint8_t publish_flag = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_I2C1_Init(void);
+static void MX_TIM2_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void Get_MPU6050_Data()
+{
+    uint8_t raw14[14];
+    HAL_StatusTypeDef st = HAL_I2C_Mem_Read(&hi2c1, MPU6050_ADDRESS_AD0_LOW, 0x3B, I2C_MEMADD_SIZE_8BIT, raw14, 14, 500);
+    if (st == HAL_OK)
+    {
+        accel_raw[0] = (int16_t)((uint16_t)raw14[0] << 8) | raw14[1];
+        accel_raw[1] = (int16_t)((uint16_t)raw14[2] << 8) | raw14[3];
+        accel_raw[2] = (int16_t)((uint16_t)raw14[4] << 8) | raw14[5];
+        int16_t temp_raw = (int16_t)((uint16_t)raw14[6] << 8) | raw14[7];
+        gyro_raw[0] = (int16_t)((uint16_t)raw14[8] << 8) | raw14[9];
+        gyro_raw[1] = (int16_t)((uint16_t)raw14[10] << 8) | raw14[11];
+        gyro_raw[2] = (int16_t)((uint16_t)raw14[12] << 8) | raw14[13];
 
+        temp_deg = (float)temp_raw / 340.0f + 36.53f;
+    }
+    else
+    {
+        HAL_UART_Transmit(&huart2, (uint8_t *)"direct read 0x3B fail\r\n", 24, 1000);
+    }
+
+    mpu6050_basic_read_temperature(&temp_deg);
+}
+
+void Dis_MPU6050_Data_On_oled()
+{
+    snprintf(buf, sizeof(buf), "Ax:%6d Ay:%6d", accel_raw[0], accel_raw[1]);
+    ssd1306_basic_string(0, 0, buf, (uint16_t)strlen(buf), Oled_dis_Zhengxian, SSD1306_FONT_12);
+
+    snprintf(buf, sizeof(buf), "Az:%6d Gx:%6d", accel_raw[2], gyro_raw[0]);
+    ssd1306_basic_string(0, 16, buf, (uint16_t)strlen(buf), Oled_dis_Zhengxian, SSD1306_FONT_12);
+
+    snprintf(buf, sizeof(buf), "Gy:%6d Gz:%6d", gyro_raw[1], gyro_raw[2]);
+    ssd1306_basic_string(0, 32, buf, (uint16_t)strlen(buf), Oled_dis_Zhengxian, SSD1306_FONT_12);
+
+    temp_tenth = (int)(temp_deg * 10.0f + (temp_deg >= 0 ? 0.5f : -0.5f));
+    snprintf(buf, sizeof(buf), "T:%d.%dC", temp_tenth / 10, abs(temp_tenth % 10));
+    ssd1306_basic_string(0, 48, buf, (uint16_t)strlen(buf), Oled_dis_Zhengxian, SSD1306_FONT_12);
+
+    // show WiFi status to the right of temperature (clear area then write)
+    char wbuf[32];
+    if (esp_is_wifi_connected())
+    {
+      snprintf(wbuf, sizeof(wbuf), "W:OK");
+    }
+    else
+    {
+      snprintf(wbuf, sizeof(wbuf), "W:--");
+    }
+    // clear area on right side (columns ~64-127, rows 48-63)
+    ssd1306_basic_rect(64, 48, 127, 63, 0);
+    ssd1306_basic_string(70, 48, wbuf, (uint16_t)strlen(wbuf), Oled_dis_Zhengxian, SSD1306_FONT_12);
+}
+
+void Uart_Send_MPU6050_Data()
+{
+    HAL_UART_Transmit(&huart2, (uint8_t *)"RAW: ", 5, 1000);
+    snprintf(buf, sizeof(buf), "Ax=%d,Ay=%d,Az=%d,Gx=%d,Gy=%d,Gz=%d,T=%d.%d\r\n",
+    accel_raw[0], accel_raw[1], accel_raw[2], gyro_raw[0], gyro_raw[1], gyro_raw[2], temp_tenth / 10, abs(temp_tenth % 10));
+    HAL_UART_Transmit(&huart2, (uint8_t *)buf, (uint16_t)strlen(buf), 1000);
+}
+
+void Blink_Board_LED()
+{
+    led_cnt++;
+    if(led_cnt%20000==0)
+    {
+      HAL_GPIO_TogglePin(BOARD_LED_GPIO_Port, BOARD_LED_Pin);
+    }
+}
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+    if(htim->Instance == TIM2)
+    {
+        led_cnt++;
+        if(led_cnt >= 100) // 10ms × 100 = 1000ms = 1s
+        {
+            led_cnt = 0;
+            HAL_GPIO_TogglePin(BOARD_LED_GPIO_Port, BOARD_LED_Pin);
+      publish_flag = 1; // signal main loop to publish temperature
+        }
+    }
+}
 /* USER CODE END 0 */
 
 /**
@@ -109,96 +202,23 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
+  // start UART1 DMA circular reception for ESP8266 AT responses
+  extern void esp_start_dma_rx(void);
+  esp_start_dma_rx();
   MX_I2C1_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-  // 在初始化后添加（main.c 中 MX_I2C1_Init 调用后）
-  uint8_t dev = MPU6050_ADDRESS_AD0_LOW; // 0xD0 (driver 使用 8-bit)
-  HAL_StatusTypeDef st;
-
-  // 尝试用原始 addr（驱动使用的 8-bit）检查
-  st = HAL_I2C_IsDeviceReady(&hi2c1, dev, 3, 100);
-  if (st == HAL_OK) {
-    HAL_UART_Transmit(&huart2, (uint8_t *)"I2C device ready at 0xD0\r\n", 25, 1000);
-  } else {
-    HAL_UART_Transmit(&huart2, (uint8_t *)"No ACK at 0xD0\r\n", 16, 1000);
-  }
-
-  // 如果上面失败，再尝试 7-bit 地址左移或右移以排查地址歧义
-  uint16_t dev7 = (dev >> 1); // 7-bit form
-  st = HAL_I2C_IsDeviceReady(&hi2c1, dev7<<1, 3, 100);
-  if (st == HAL_OK) {
-    HAL_UART_Transmit(&huart2, (uint8_t *)"I2C device ready at 7-bit<<1 form\r\n", 35, 1000);
-  } else {
-    HAL_UART_Transmit(&huart2, (uint8_t *)"No ACK at 7-bit<<1 form\r\n", 26, 1000);
-  }
-
-  /* initialize and run ssd1306 display test over software I2C */
-  //ssd1306_display_test(SSD1306_INTERFACE_IIC, SSD1306_ADDR_SA0_0);
+  HAL_TIM_Base_Start_IT(&htim2); // 启动TIM2并开启更新中断
+  // initialize ThingsCloud connection (ESP01)
+  thingscloud_init();
   ssd1306_basic_init(SSD1306_INTERFACE_IIC, SSD1306_ADDR_SA0_0);
   ssd1306_basic_display_on();
-  /* Initialize MPU6050 on I2C1 (address AD0 low by default). Uses HAL I2C1. */
   if (mpu6050_basic_init(MPU6050_ADDRESS_AD0_LOW) != 0)
   {
-    /* initialization failed, print to debug UART2 */
     HAL_UART_Transmit(&huart2, (uint8_t *)"MPU6050 init failed\r\n", 21, 1000);
-  }
-  /* Diagnostic: read WHO_AM_I and raw accel registers to verify I2C reads */
-  else
-  {
-    uint8_t who = 0;
-    uint8_t tmpbuf[14];
-    int16_t tmp_raw;
-    HAL_StatusTypeDef stat;
-    /* WHO_AM_I register 0x75 */
-    stat = HAL_I2C_Mem_Read(&hi2c1, MPU6050_ADDRESS_AD0_LOW, 0x75, I2C_MEMADD_SIZE_8BIT, &who, 1, 500);
-    if (stat == HAL_OK)
-    {
-      char tbuf[48];
-      snprintf(tbuf, sizeof(tbuf), "WHO_AM_I=0x%02X\r\n", who);
-      HAL_UART_Transmit(&huart2, (uint8_t *)tbuf, (uint16_t)strlen(tbuf), 1000);
-    }
-    else
-    {
-      HAL_UART_Transmit(&huart2, (uint8_t *)"WHO_AM_I read fail\r\n", 20, 1000);
-    }
-
-    /* read 14 bytes from ACCEL_XOUT_H (0x3B) */
-    stat = HAL_I2C_Mem_Read(&hi2c1, MPU6050_ADDRESS_AD0_LOW, 0x3B, I2C_MEMADD_SIZE_8BIT, tmpbuf, 14, 500);
-    if (stat == HAL_OK)
-    {
-      char hbuf[96];
-      int i;
-      int pos = snprintf(hbuf, sizeof(hbuf), "RAW BYTES:");
-      for (i = 0; i < 14; i++)
-      {
-        pos += snprintf(hbuf + pos, sizeof(hbuf) - pos, " %02X", tmpbuf[i]);
-        if (pos >= (int)sizeof(hbuf) - 4) break;
-      }
-      pos += snprintf(hbuf + pos, sizeof(hbuf) - pos, "\r\n");
-      HAL_UART_Transmit(&huart2, (uint8_t *)hbuf, (uint16_t)strlen(hbuf), 1000);
-    }
-    else
-    {
-      HAL_UART_Transmit(&huart2, (uint8_t *)"ACCEL raw read fail\r\n", 22, 1000);
-    }
-
-    /* read temperature raw as int16 and print as integer (avoid float printf) */
-    stat = HAL_I2C_Mem_Read(&hi2c1, MPU6050_ADDRESS_AD0_LOW, 0x41, I2C_MEMADD_SIZE_8BIT, (uint8_t *)&tmpbuf[0], 2, 500);
-    if (stat == HAL_OK)
-    {
-      tmp_raw = (int16_t)((uint16_t)tmpbuf[0] << 8 | tmpbuf[1]);
-      char t2[32];
-      /* temperature in degrees C = tmp_raw/340 + 36.53. Print raw and scaled ten-thousandth as integer */
-      int temp_milli = (int)((((float)tmp_raw) / 340.0f + 36.53f) * 1000.0f + 0.5f);
-      snprintf(t2, sizeof(t2), "TEMP raw=%d temp_mC=%d\r\n", tmp_raw, temp_milli);
-      HAL_UART_Transmit(&huart2, (uint8_t *)t2, (uint16_t)strlen(t2), 1000);
-    }
-    else
-    {
-      HAL_UART_Transmit(&huart2, (uint8_t *)"TEMP read fail\r\n", 16, 1000);
-    }
   }
   /* USER CODE END 2 */
 
@@ -206,76 +226,16 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    /* Read MPU6050 raw accel/gyro and temperature, then display on OLED */
-    int16_t accel_raw[3] = {0};
-    int16_t gyro_raw[3] = {0};
-    float temp_deg = 0;
-
-    /* try to read raw data */
-    if (1)
+    Get_MPU6050_Data();
+    Dis_MPU6050_Data_On_oled();
+    //Uart_Send_MPU6050_Data();
+    if (publish_flag)
     {
-        /* 替换原有 if (mpu6050_basic_read_raw(...)) { ... } 分支为下面直接读取实现 */
-        uint8_t raw14[14];
-        HAL_StatusTypeDef st = HAL_I2C_Mem_Read(&hi2c1, MPU6050_ADDRESS_AD0_LOW, 0x3B, I2C_MEMADD_SIZE_8BIT, raw14, 14, 500);
-        if (st == HAL_OK)
-        {
-            accel_raw[0] = (int16_t)((uint16_t)raw14[0] << 8) | raw14[1];
-            accel_raw[1] = (int16_t)((uint16_t)raw14[2] << 8) | raw14[3];
-            accel_raw[2] = (int16_t)((uint16_t)raw14[4] << 8) | raw14[5];
-            int16_t temp_raw = (int16_t)((uint16_t)raw14[6] << 8) | raw14[7];
-            gyro_raw[0] = (int16_t)((uint16_t)raw14[8] << 8) | raw14[9];
-            gyro_raw[1] = (int16_t)((uint16_t)raw14[10] << 8) | raw14[11];
-            gyro_raw[2] = (int16_t)((uint16_t)raw14[12] << 8) | raw14[13];
-
-            temp_deg = (float)temp_raw / 340.0f + 36.53f;
-        }
-        else
-        {
-            HAL_UART_Transmit(&huart2, (uint8_t *)"direct read 0x3B fail\r\n", 24, 1000);
-        }
-
-      /* read temperature */
-      if (mpu6050_basic_read_temperature(&temp_deg) != 0)
-      {
-        temp_deg = 0; /* mark read error with zero */
-      }
-
-      /* prepare multiple lines for OLED (y positions chosen for typical 128x64) */
-      //ssd1306_basic_clear();
-      snprintf(buf, sizeof(buf), "Ax:%6d Ay:%6d", accel_raw[0], accel_raw[1]);
-      ssd1306_basic_string(0, 0, buf, (uint16_t)strlen(buf), Oled_dis_Zhengxian, SSD1306_FONT_12);
-      snprintf(buf, sizeof(buf), "Az:%6d Gx:%6d", accel_raw[2], gyro_raw[0]);
-      ssd1306_basic_string(0, 16, buf, (uint16_t)strlen(buf), Oled_dis_Zhengxian, SSD1306_FONT_12);
-      snprintf(buf, sizeof(buf), "Gy:%6d Gz:%6d", gyro_raw[1], gyro_raw[2]);
-      ssd1306_basic_string(0, 32, buf, (uint16_t)strlen(buf), Oled_dis_Zhengxian, SSD1306_FONT_12);
-      {
-        int temp_tenth = (int)(temp_deg * 10.0f + (temp_deg >= 0 ? 0.5f : -0.5f));
-        snprintf(buf, sizeof(buf), "T:%d.%dC", temp_tenth / 10, abs(temp_tenth % 10));
-        ssd1306_basic_string(0, 48, buf, (uint16_t)strlen(buf), Oled_dis_Zhengxian, SSD1306_FONT_12);
-      }
-
-      /* send same info to UART2 for debugging */
-      {
-        int temp_tenth = (int)(temp_deg * 10.0f + (temp_deg >= 0 ? 0.5f : -0.5f));
-        HAL_UART_Transmit(&huart2, (uint8_t *)"RAW: ", 5, 1000);
-        snprintf(buf, sizeof(buf), "Ax=%d,Ay=%d,Az=%d,Gx=%d,Gy=%d,Gz=%d,T=%d.%d\r\n",
-                accel_raw[0], accel_raw[1], accel_raw[2], gyro_raw[0], gyro_raw[1], gyro_raw[2], temp_tenth / 10, abs(temp_tenth % 10));
-        HAL_UART_Transmit(&huart2, (uint8_t *)buf, (uint16_t)strlen(buf), 1000);
-      }
+        publish_flag = 0;
+        // publish current temperature to ThingsCloud
+        thingscloud_publish_temp(temp_deg);
     }
-    else
-    {
-      /* read failed, print error */
-      HAL_UART_Transmit(&huart2, (uint8_t *)"MPU6050 raw read failed\r\n", 26, 1000);
-    }
-
-    led_cnt++;
-    if(led_cnt%20000==0)
-    {
-      HAL_GPIO_TogglePin(BOARD_LED_GPIO_Port, BOARD_LED_Pin);
-    }
-    
-    // HAL_Delay(500);
+    //Blink_Board_LED();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -357,6 +317,51 @@ static void MX_I2C1_Init(void)
 }
 
 /**
+  * @brief TIM2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM2_Init(void)
+{
+
+  /* USER CODE BEGIN TIM2_Init 0 */
+
+  /* USER CODE END TIM2_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM2_Init 1 */
+
+  /* USER CODE END TIM2_Init 1 */
+  htim2.Instance = TIM2;
+  htim2.Init.Prescaler = 7199;
+  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim2.Init.Period = 99;
+  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM2_Init 2 */
+
+  /* USER CODE END TIM2_Init 2 */
+
+}
+
+/**
   * @brief USART1 Initialization Function
   * @param None
   * @retval None
@@ -419,6 +424,22 @@ static void MX_USART2_UART_Init(void)
   /* USER CODE BEGIN USART2_Init 2 */
 
   /* USER CODE END USART2_Init 2 */
+
+}
+
+/**
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void)
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA1_Channel5_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel5_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
 
 }
 
