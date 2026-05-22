@@ -235,7 +235,6 @@ int main(void)
         // publish current temperature to ThingsCloud
         thingscloud_publish_temp(temp_deg);
     }
-    //Blink_Board_LED();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

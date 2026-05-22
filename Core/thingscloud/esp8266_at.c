@@ -14,6 +14,12 @@ static volatile int g_mqtt_connected = 0;
 enum { ESP_DMA_RX_SIZE = 1024 };
 static uint8_t esp_dma_rx[ESP_DMA_RX_SIZE];
 static volatile uint16_t esp_dma_last_pos = 0;
+// stored connection parameters for reconnect attempts
+static char stored_accessToken[64] = {0};
+static char stored_projectKey[64] = {0};
+static char stored_host[128] = {0};
+static char stored_port[16] = {0};
+static char stored_topic[64] = {0};
 
 int esp_send_cmd_wait(const char *cmd, char *resp, int resp_len, uint32_t timeout_ms)
 {
@@ -61,15 +67,15 @@ int esp_send_cmd_wait(const char *cmd, char *resp, int resp_len, uint32_t timeou
             }
             if (strstr(resp, "WIFI DISCONNECT") != NULL || strstr(resp, "WIFI DISCONNECT\r\n") != NULL || strstr(resp, "WIFI DISCONNECTED") != NULL)
             {
-                g_wifi_connected = 0;
+                //g_wifi_connected = 0;
             }
             if (strstr(resp, "+MQTTCONNECTED") != NULL || strstr(resp, "+MQTTCONNECTED\r\n") != NULL || strstr(resp, "MQTT CONNECTED") != NULL)
             {
                 g_mqtt_connected = 1;
             }
-            if (strstr(resp, "+MQTTDISCONNECTED") != NULL || strstr(resp, "MQTT DISCONNECT") != NULL || strstr(resp, "ERROR") != NULL)
+            if (strstr(resp, "+MQTTDISCONNECTED") != NULL || strstr(resp, "MQTT DISCONNECT") != NULL)
             {
-                g_mqtt_connected = 0;
+                //g_mqtt_connected = 0;
             }
             // fast exit if OK or ERROR or prompt seen
             if (strstr(resp, "OK") != NULL || strstr(resp, "ERROR") != NULL || strstr(resp, ">") != NULL)
@@ -125,6 +131,13 @@ int esp_mqtt_usercfg_and_connect(const char *accessToken, const char *projectKey
     char cmd[512];
     char resp[1024];
 
+    // store parameters for future reconnect attempts
+    if (accessToken) strncpy(stored_accessToken, accessToken, sizeof(stored_accessToken)-1);
+    if (projectKey) strncpy(stored_projectKey, projectKey, sizeof(stored_projectKey)-1);
+    if (host) strncpy(stored_host, host, sizeof(stored_host)-1);
+    if (port) strncpy(stored_port, port, sizeof(stored_port)-1);
+    if (topic) strncpy(stored_topic, topic, sizeof(stored_topic)-1);
+
     // Configure MQTT user (index 0)
     // Format: AT+MQTTUSERCFG=0,1,"topic","AccessToken","ProjectKey",0,0,""
     snprintf(cmd, sizeof(cmd), "AT+MQTTUSERCFG=0,1,\"%s\",\"%s\",\"%s\",0,0,\"\"", topic, accessToken, projectKey);
@@ -132,14 +145,14 @@ int esp_mqtt_usercfg_and_connect(const char *accessToken, const char *projectKey
 
     // Connect to MQTT broker
     snprintf(cmd, sizeof(cmd), "AT+MQTTCONN=0,\"%s\",%s,1", host, port);
-    esp_send_cmd_wait(cmd, resp, sizeof(resp), 15000);
+    esp_send_cmd_wait(cmd, resp, sizeof(resp), 20000);
 
-    // give some time for mqtt connected token
+    // give more time for mqtt connected token (up to 20s)
     uint32_t t0 = HAL_GetTick();
-    while ((HAL_GetTick()-t0) < 5000)
+    while ((HAL_GetTick()-t0) < 20000)
     {
         if (g_mqtt_connected) break;
-        HAL_Delay(100);
+        HAL_Delay(200);
     }
 
     return 0;
@@ -154,10 +167,37 @@ int esp_mqtt_publish_temperature(const char *topic, float temperature)
     int t10 = (int)(temperature * 10.0f + (temperature >= 0 ? 0.5f : -0.5f));
     int t_int = t10 / 10;
     int t_frac = abs(t10 % 10);
-    snprintf(payload, sizeof(payload), "{\"%s\":%d.%d}", "temperature", t_int, t_frac);
-    // AT+MQTTPUB=0,"attributes","{\"temperature\":29}",0,0
+    // payload JSON must escape inner double-quotes for AT command
+    // example: AT+MQTTPUB=0,"attributes","{\"temperature\":29}",0,0
+    snprintf(payload, sizeof(payload), "{\\\"%s\\\":%d.%d}", "temperature", t_int, t_frac);
     snprintf(cmd, sizeof(cmd), "AT+MQTTPUB=0,\"%s\",\"%s\",0,0", topic, payload);
-    esp_send_cmd_wait(cmd, resp, sizeof(resp), 5000);
+
+    // Ensure MQTT is connected before publishing. If not, attempt reconnect.
+    if (!g_mqtt_connected)
+    {
+        // try reconnect using stored parameters
+        esp_mqtt_usercfg_and_connect(stored_accessToken, stored_projectKey, stored_host, stored_port, stored_topic);
+        // wait briefly for URC
+        uint32_t t0 = HAL_GetTick();
+        while ((HAL_GetTick()-t0) < 15000)
+        {
+            if (g_mqtt_connected) break;
+            HAL_Delay(200);
+        }
+    }
+
+    // Try publish with a couple retries if transient ERROR occurs
+    for (int attempt = 0; attempt < 3; ++attempt)
+    {
+        int len = esp_send_cmd_wait(cmd, resp, sizeof(resp), 5000);
+        if (len > 0 && strstr(resp, "ERROR") != NULL)
+        {
+            // publish failed
+            HAL_Delay(200);
+            continue;
+        }
+        break;
+    }
 
     return 0;
 }
