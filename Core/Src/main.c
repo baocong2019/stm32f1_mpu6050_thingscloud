@@ -112,7 +112,7 @@ void Get_MPU6050_Data()
         HAL_UART_Transmit(&huart2, (uint8_t *)"direct read 0x3B fail\r\n", 24, 1000);
     }
 
-    mpu6050_basic_read_temperature(&temp_deg);
+    //mpu6050_basic_read_temperature(&temp_deg);
 }
 
 void Dis_MPU6050_Data_On_oled()
@@ -129,7 +129,11 @@ void Dis_MPU6050_Data_On_oled()
     temp_tenth = (int)(temp_deg * 10.0f + (temp_deg >= 0 ? 0.5f : -0.5f));
     snprintf(buf, sizeof(buf), "T:%d.%dC", temp_tenth / 10, abs(temp_tenth % 10));
     ssd1306_basic_string(0, 48, buf, (uint16_t)strlen(buf), Oled_dis_Zhengxian, SSD1306_FONT_12);
+}
 
+
+void Dis_wifi_status_on_oled()
+{
     // show WiFi status to the right of temperature (clear area then write)
     char wbuf[32];
     if (esp_is_wifi_connected())
@@ -231,6 +235,7 @@ int main(void)
   {
     Get_MPU6050_Data();
     Dis_MPU6050_Data_On_oled();
+    Dis_wifi_status_on_oled();
     //Uart_Send_MPU6050_Data();
     if (publish_flag)
     {

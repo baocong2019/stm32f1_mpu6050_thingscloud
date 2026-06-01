@@ -60,7 +60,7 @@ void thingscloud_init()
 			// start DMA rx to capture incoming URCs and subscribe to command topic
 			esp_start_dma_rx();
 			esp_mqtt_subscribe(Subscribe_topic);
-			esp_mqtt_subscribe(Subscribe_command);
+			//esp_mqtt_subscribe(Subscribe_command);
 			
 			ssd1306_basic_clear();
 			snprintf(buf, sizeof(buf), "subscribed topic");
@@ -123,15 +123,15 @@ void thingscloud_poll_and_handle(void)
 				// Many BluePill/PC13 LEDs are active-low: set RESET to turn on
 				if (turn_on)
 				{
-					HAL_GPIO_WritePin(BOARD_LED_GPIO_Port, BOARD_LED_Pin, GPIO_PIN_RESET);
-					// ssd1306_basic_clear();
-					ssd1306_basic_string(0, 0, "LED: ON", 6, Oled_dis_Zhengxian, SSD1306_FONT_12);
+					HAL_GPIO_WritePin(BOARD_LED_GPIO_Port, BOARD_LED_Pin, GPIO_PIN_SET);
+					ssd1306_basic_clear();
+					ssd1306_basic_string(0, 0, "LED:ON", 6, Oled_dis_Zhengxian, SSD1306_FONT_12);
 				}
 				else
 				{
-					HAL_GPIO_WritePin(BOARD_LED_GPIO_Port, BOARD_LED_Pin, GPIO_PIN_SET);
-					//ssd1306_basic_clear();
-					ssd1306_basic_string(0, 0, "LED: OFF", 7, Oled_dis_Zhengxian, SSD1306_FONT_12);
+					HAL_GPIO_WritePin(BOARD_LED_GPIO_Port, BOARD_LED_Pin, GPIO_PIN_RESET);
+					ssd1306_basic_clear();
+					ssd1306_basic_string(0, 0, "LED:OFF", 7, Oled_dis_Zhengxian, SSD1306_FONT_12);
 				}
 			}
 		}
