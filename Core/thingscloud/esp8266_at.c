@@ -60,14 +60,13 @@ int esp_send_cmd_wait(const char *cmd, char *resp, int resp_len, uint32_t timeou
         if (idx > 0)
         {
             resp[idx] = '\0';
-            // update connection flags based on received tokens
             if (strstr(resp, "WIFI CONNECTED") != NULL || strstr(resp, "WIFI CONNECTED\r\n") != NULL || strstr(resp, "WIFI_CONNECTED") != NULL)
             {
                 g_wifi_connected = 1;
             }
             if (strstr(resp, "WIFI DISCONNECT") != NULL || strstr(resp, "WIFI DISCONNECT\r\n") != NULL || strstr(resp, "WIFI DISCONNECTED") != NULL)
             {
-                //g_wifi_connected = 0;
+                
             }
             if (strstr(resp, "+MQTTCONNECTED") != NULL || strstr(resp, "+MQTTCONNECTED\r\n") != NULL || strstr(resp, "MQTT CONNECTED") != NULL)
             {
@@ -75,7 +74,7 @@ int esp_send_cmd_wait(const char *cmd, char *resp, int resp_len, uint32_t timeou
             }
             if (strstr(resp, "+MQTTDISCONNECTED") != NULL || strstr(resp, "MQTT DISCONNECT") != NULL)
             {
-                //g_mqtt_connected = 0;
+                
             }
             // fast exit if OK or ERROR or prompt seen
             if (strstr(resp, "OK") != NULL || strstr(resp, "ERROR") != NULL || strstr(resp, ">") != NULL)
@@ -95,27 +94,19 @@ int esp_send_cmd_wait(const char *cmd, char *resp, int resp_len, uint32_t timeou
 int esp_init_and_connect_wifi(const char *ssid, const char *password)
 {
     char resp[512];
-    // Disable echo to simplify parsing
     esp_send_cmd_wait("ATE0", resp, sizeof(resp), 1000);
-    // Test
     esp_send_cmd_wait("AT", resp, sizeof(resp), 2000);
-
-    // Set station mode
     snprintf(resp, sizeof(resp), "AT+CWMODE=1");
     esp_send_cmd_wait(resp, resp, sizeof(resp), 2000);
-
-    // Join AP
     snprintf(resp, sizeof(resp), "AT+CWJAP=\"%s\",\"%s\"", ssid, password);
     esp_send_cmd_wait(resp, resp, sizeof(resp), 30000);
 
-    // wait up to 10s for WIFI CONNECTED token
     uint32_t t0 = HAL_GetTick();
     while ((HAL_GetTick()-t0) < 10000)
     {
         if (g_wifi_connected) break;
         HAL_Delay(200);
     }
-
     return 0;
 }
 
@@ -228,4 +219,59 @@ void esp_check_and_reconnect(const char *ssid, const char *password, const char 
         last_mqtt_attempt = now;
         esp_mqtt_usercfg_and_connect(accessToken, projectKey, host, port, topic);
     }
+}
+
+int esp_mqtt_subscribe(const char *topic)
+{
+    char cmd[256];
+    char resp[512];
+    if (topic == NULL) return -1;
+    snprintf(cmd, sizeof(cmd), "AT+MQTTSUB=0,\"%s\",1", topic);
+    esp_send_cmd_wait(cmd, resp, sizeof(resp), 5000);
+    return 0;
+}
+
+int esp_mqtt_poll(char *topic_out, int topic_out_len, char *payload_out, int payload_out_len)
+{
+    char resp[1024];
+    int len = esp_send_cmd_wait(NULL, resp, sizeof(resp), 200);
+    if (len <= 0)
+    {
+        return 0;
+    }
+
+    // Try to find a topic like command/send/...
+    const char *p_topic = strstr(resp, "command/send/");
+    if (p_topic == NULL)
+    {
+        // fallback: look for any quoted topic pattern after +MQTTSUBRECV or +MQTTPUB
+        p_topic = strstr(resp, ",\"");
+        if (p_topic) p_topic += 2; // move after ,"
+    }
+
+    if (p_topic && topic_out && topic_out_len > 0)
+    {
+        int i = 0;
+        const char *q = p_topic;
+        while (*q != '\0' && *q != '"' && *q != '\r' && *q != '\n' && *q != ',' && i < topic_out_len-1)
+        {
+            topic_out[i++] = *q++;
+        }
+        topic_out[i] = '\0';
+    }
+
+    // find JSON payload between first '{' and the matching '}'
+    const char *p = strchr(resp, '{');
+    const char *q = NULL;
+    if (p) q = strchr(p, '}');
+    if (p && q && payload_out && payload_out_len > 0)
+    {
+        int plen = (int)(q - p + 1);
+        if (plen >= payload_out_len) plen = payload_out_len - 1;
+        memcpy(payload_out, p, plen);
+        payload_out[plen] = '\0';
+        return 1;
+    }
+
+    return 0;
 }

@@ -4,5 +4,6 @@
 
 void thingscloud_init(void);
 void thingscloud_publish_temp(float t);
+void thingscloud_poll_and_handle(void);
 
 #endif

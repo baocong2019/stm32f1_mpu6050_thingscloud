@@ -40,8 +40,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define Oled_dis_Zhengxian 1
-#define Oled_dis_Fanxian 0
+
 
 
 /* USER CODE END PD */
@@ -71,6 +70,7 @@ int16_t gyro_raw[3] = {0};
 float temp_deg = 0;
 int temp_tenth = 0;
 volatile uint8_t publish_flag = 0;
+volatile uint8_t push_data_thingscloud_interval_time = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -81,6 +81,10 @@ static void MX_USART1_UART_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_TIM2_Init(void);
+
+extern void esp_start_dma_rx(void);
+
+
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -113,14 +117,14 @@ void Get_MPU6050_Data()
 
 void Dis_MPU6050_Data_On_oled()
 {
-    snprintf(buf, sizeof(buf), "Ax:%6d Ay:%6d", accel_raw[0], accel_raw[1]);
-    ssd1306_basic_string(0, 0, buf, (uint16_t)strlen(buf), Oled_dis_Zhengxian, SSD1306_FONT_12);
+    // snprintf(buf, sizeof(buf), "Ax:%6d Ay:%6d", accel_raw[0], accel_raw[1]);
+    // ssd1306_basic_string(0, 0, buf, (uint16_t)strlen(buf), Oled_dis_Zhengxian, SSD1306_FONT_12);
 
-    snprintf(buf, sizeof(buf), "Az:%6d Gx:%6d", accel_raw[2], gyro_raw[0]);
-    ssd1306_basic_string(0, 16, buf, (uint16_t)strlen(buf), Oled_dis_Zhengxian, SSD1306_FONT_12);
+    // snprintf(buf, sizeof(buf), "Az:%6d Gx:%6d", accel_raw[2], gyro_raw[0]);
+    // ssd1306_basic_string(0, 16, buf, (uint16_t)strlen(buf), Oled_dis_Zhengxian, SSD1306_FONT_12);
 
-    snprintf(buf, sizeof(buf), "Gy:%6d Gz:%6d", gyro_raw[1], gyro_raw[2]);
-    ssd1306_basic_string(0, 32, buf, (uint16_t)strlen(buf), Oled_dis_Zhengxian, SSD1306_FONT_12);
+    // snprintf(buf, sizeof(buf), "Gy:%6d Gz:%6d", gyro_raw[1], gyro_raw[2]);
+    // ssd1306_basic_string(0, 32, buf, (uint16_t)strlen(buf), Oled_dis_Zhengxian, SSD1306_FONT_12);
 
     temp_tenth = (int)(temp_deg * 10.0f + (temp_deg >= 0 ? 0.5f : -0.5f));
     snprintf(buf, sizeof(buf), "T:%d.%dC", temp_tenth / 10, abs(temp_tenth % 10));
@@ -136,8 +140,6 @@ void Dis_MPU6050_Data_On_oled()
     {
       snprintf(wbuf, sizeof(wbuf), "W:--");
     }
-    // clear area on right side (columns ~64-127, rows 48-63)
-    ssd1306_basic_rect(64, 48, 127, 63, 0);
     ssd1306_basic_string(70, 48, wbuf, (uint16_t)strlen(wbuf), Oled_dis_Zhengxian, SSD1306_FONT_12);
 }
 
@@ -166,8 +168,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         if(led_cnt >= 100) // 10ms × 100 = 1000ms = 1s
         {
             led_cnt = 0;
-            HAL_GPIO_TogglePin(BOARD_LED_GPIO_Port, BOARD_LED_Pin);
-      publish_flag = 1; // signal main loop to publish temperature
+            //HAL_GPIO_TogglePin(BOARD_LED_GPIO_Port, BOARD_LED_Pin);
+            push_data_thingscloud_interval_time++;
+            if (push_data_thingscloud_interval_time >= 5) // 5s interval
+            {
+                push_data_thingscloud_interval_time = 0;
+                publish_flag = 1; // signal main loop to publish temperature
+            }
         }
     }
 }
@@ -183,42 +190,38 @@ int main(void)
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
-
-  /* MCU Configuration--------------------------------------------------------*/
-
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
-
   /* USER CODE BEGIN Init */
 
   /* USER CODE END Init */
-
-  /* Configure the system clock */
   SystemClock_Config();
-
   /* USER CODE BEGIN SysInit */
 
   /* USER CODE END SysInit */
-
-  /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
-  // start UART1 DMA circular reception for ESP8266 AT responses
-  extern void esp_start_dma_rx(void);
   esp_start_dma_rx();
   MX_I2C1_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(&htim2); // 启动TIM2并开启更新中断
-  // initialize ThingsCloud connection (ESP01)
-  thingscloud_init();
   ssd1306_basic_init(SSD1306_INTERFACE_IIC, SSD1306_ADDR_SA0_0);
   ssd1306_basic_display_on();
+  thingscloud_init();
   if (mpu6050_basic_init(MPU6050_ADDRESS_AD0_LOW) != 0)
   {
     HAL_UART_Transmit(&huart2, (uint8_t *)"MPU6050 init failed\r\n", 21, 1000);
+    snprintf(buf, sizeof(buf), "MPU6050 init failed");
+    ssd1306_basic_string(0, 0, buf, (uint16_t)strlen(buf), Oled_dis_Zhengxian, SSD1306_FONT_12);
+  }
+  else
+  {
+    snprintf(buf, sizeof(buf), "MPU6050 init ok");
+    ssd1306_basic_string(0, 0, buf, (uint16_t)strlen(buf), Oled_dis_Zhengxian, SSD1306_FONT_12);
+    HAL_Delay(400);
+    ssd1306_basic_clear();
   }
   /* USER CODE END 2 */
 
@@ -232,9 +235,9 @@ int main(void)
     if (publish_flag)
     {
         publish_flag = 0;
-        // publish current temperature to ThingsCloud
         thingscloud_publish_temp(temp_deg);
     }
+    thingscloud_poll_and_handle();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

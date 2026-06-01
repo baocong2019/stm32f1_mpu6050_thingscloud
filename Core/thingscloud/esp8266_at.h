@@ -13,4 +13,11 @@ int esp_is_mqtt_connected(void);
 void esp_check_and_reconnect(const char *ssid, const char *password, const char *accessToken, const char *projectKey, const char *host, const char *port, const char *topic);
 void esp_start_dma_rx(void);
 
+/* Subscribe to a topic (supports MQTT wildcards) */
+int esp_mqtt_subscribe(const char *topic);
+
+/* Poll incoming MQTT/AT URC messages; if a publish to any topic is found,
+   returns 1 and fills topic_out and payload_out (null-terminated). */
+int esp_mqtt_poll(char *topic_out, int topic_out_len, char *payload_out, int payload_out_len);
+
 #endif

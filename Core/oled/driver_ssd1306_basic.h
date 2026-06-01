@@ -51,6 +51,10 @@ extern "C"{
  * @{
  */
 
+
+#define Oled_dis_Zhengxian 1
+#define Oled_dis_Fanxian 0
+
 /**
  * @brief ssd1306 basic example default definition
  */
