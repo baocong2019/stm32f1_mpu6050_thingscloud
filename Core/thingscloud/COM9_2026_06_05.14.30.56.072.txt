@@ -1,0 +1,806 @@
+
+[DEBUG] ===== WiFi Auto-Connect Start =====
+[DEBUG] Trying to connect with saved WiFi...
+
+[CMD] AT+CWMODE=1
+
+OK
+
+[CMD] AT+CWAUTOCONN=1
+
+OK
+[DEBUG] Waiting for WIFI CONNECTED...
+[DEBUG] Timeout waiting for WIFI CONNECTED
+[DEBUG] Phase 1 failed - starting SmartConfig fallback...
+[DEBUG] Starting SmartConfig (ESP-TOUCH + AirKiss)...
+
+[CMD] AT+CWMODE=1
+
+OK
+
+[CMD] AT+CWAUTOCONN=1
+
+OK
+
+[CMD] AT+CWSTARTSMART=3
+
+OK
+[DEBUG] SmartConfig started. Use phone App to configure WiFi.
+[DEBUG] Waiting for WIFI CONNECTED...
+smartconfig type:ESPTOUCH
+Smart get wifi info
+ssid:CCB
+password:yilou101
+[DEBUG] Timeout waiting for WIFI CONNECTED
+[DEBUG] Stopping SmartConfig...
+
+[CMD] AT+CWSTOPSMART
+
+OK
+[DEBUG] SmartConfig FAILED - timeout
+[DEBUG] ===== WiFi Auto-Connect FAILED =====
+[DEBUG] Reconnect: trying saved WiFi...
+[DEBUG] Trying to connect with saved WiFi...
+
+[CMD] AT+CWMODE=1
+
+OK
+
+[CMD] AT+CWAUTOCONN=1
+
+OK
+[DEBUG] Waiting for WIFI CONNECTED...
+[DEBUG] Timeout waiting for WIFI CONNECTED
+[DEBUG] MQTT not connected, attempting reconnect...
+[DEBUG] Configuring MQTT and connecting...
+
+[CMD] AT+MQTTUSERCFG=0,1,"","","",0,0,""
+
+OK
+
+[CMD] AT+MQTTCONN=0,"",,1
+
+ERROR
+[DEBUG] MQTT connect may have failed
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"temperature\":29.8}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"temperature\":29.8}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"temperature\":29.8}",0,0
+
+ERROR
+[DEBUG] MQTT not connected, attempting reconnect...
+[DEBUG] Configuring MQTT and connecting...
+
+[CMD] AT+MQTTUSERCFG=0,1,"","","",0,0,""
+
+OK
+
+[CMD] AT+MQTTCONN=0,"",,1
+
+ERROR
+[DEBUG] MQTT connect may have failed
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"target_temp\":21}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"target_temp\":21}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"target_temp\":21}",0,0
+
+ERROR
+[DEBUG] Reconnect: trying saved WiFi...
+[DEBUG] Trying to connect with saved WiFi...
+
+[CMD] AT+CWMODE=1
+
+OK
+
+[CMD] AT+CWAUTOCONN=1
+
+OK
+[DEBUG] Waiting for WIFI CONNECTED...
+[DEBUG] Timeout waiting for WIFI CONNECTED
+[DEBUG] MQTT not connected, attempting reconnect...
+[DEBUG] Configuring MQTT and connecting...
+
+[CMD] AT+MQTTUSERCFG=0,1,"","","",0,0,""
+
+OK
+
+[CMD] AT+MQTTCONN=0,"",,1
+
+ERROR
+[DEBUG] MQTT connect may have failed
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"temperature\":29.8}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"temperature\":29.8}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"temperature\":29.8}",0,0
+
+ERROR
+[DEBUG] MQTT not connected, attempting reconnect...
+[DEBUG] Configuring MQTT and connecting...
+
+[CMD] AT+MQTTUSERCFG=0,1,"","","",0,0,""
+
+OK
+
+[CMD] AT+MQTTCONN=0,"",,1
+
+ERROR
+[DEBUG] MQTT connect may have failed
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"target_temp\":21}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"target_temp\":21}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"target_temp\":21}",0,0
+
+ERROR
+[DEBUG] Reconnect: trying saved WiFi...
+[DEBUG] Trying to connect with saved WiFi...
+
+[CMD] AT+CWMODE=1
+
+OK
+
+[CMD] AT+CWAUTOCONN=1
+
+OK
+[DEBUG] Waiting for WIFI CONNECTED...
+[DEBUG] Timeout waiting for WIFI CONNECTED
+[DEBUG] MQTT not connected, attempting reconnect...
+[DEBUG] Configuring MQTT and connecting...
+
+[CMD] AT+MQTTUSERCFG=0,1,"","","",0,0,""
+
+OK
+
+[CMD] AT+MQTTCONN=0,"",,1
+
+ERROR
+[DEBUG] MQTT connect may have failed
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"temperature\":29.8}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"temperature\":29.8}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"temperature\":29.8}",0,0
+
+ERROR
+[DEBUG] MQTT not connected, attempting reconnect...
+[DEBUG] Configuring MQTT and connecting...
+
+[CMD] AT+MQTTUSERCFG=0,1,"","","",0,0,""
+
+OK
+
+[CMD] AT+MQTTCONN=0,"",,1
+
+ERROR
+[DEBUG] MQTT connect may have failed
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"target_temp\":21}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"target_temp\":21}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"target_temp\":21}",0,0
+
+ERROR
+[DEBUG] Reconnect: trying saved WiFi...
+[DEBUG] Trying to connect with saved WiFi...
+
+[CMD] AT+CWMODE=1
+
+OK
+
+[CMD] AT+CWAUTOCONN=1
+
+OK
+[DEBUG] Waiting for WIFI CONNECTED...
+[DEBUG] Timeout waiting for WIFI CONNECTED
+[DEBUG] MQTT not connected, attempting reconnect...
+[DEBUG] Configuring MQTT and connecting...
+
+[CMD] AT+MQTTUSERCFG=0,1,"","","",0,0,""
+
+OK
+
+[CMD] AT+MQTTCONN=0,"",,1
+
+ERROR
+[DEBUG] MQTT connect may have failed
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"temperature\":29.9}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"temperature\":29.9}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"temperature\":29.9}",0,0
+
+ERROR
+[DEBUG] MQTT not connected, attempting reconnect...
+[DEBUG] Configuring MQTT and connecting...
+
+[CMD] AT+MQTTUSERCFG=0,1,"","","",0,0,""
+
+OK
+
+[CMD] AT+MQTTCONN=0,"",,1
+
+ERROR
+[DEBUG] MQTT connect may have failed
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"target_temp\":21}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"target_temp\":21}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"target_temp\":21}",0,0
+
+ERROR
+[DEBUG] Reconnect: trying saved WiFi...
+[DEBUG] Trying to connect with saved WiFi...
+
+[CMD] AT+CWMODE=1
+
+OK
+
+[CMD] AT+CWAUTOCONN=1
+
+OK
+[DEBUG] Waiting for WIFI CONNECTED...
+[DEBUG] Timeout waiting for WIFI CONNECTED
+[DEBUG] MQTT not connected, attempting reconnect...
+[DEBUG] Configuring MQTT and connecting...
+
+[CMD] AT+MQTTUSERCFG=0,1,"","","",0,0,""
+
+OK
+
+[CMD] AT+MQTTCONN=0,"",,1
+
+ERROR
+[DEBUG] MQTT connect may have failed
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"temperature\":30.0}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"temperature\":30.0}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"temperature\":30.0}",0,0
+
+ERROR
+[DEBUG] MQTT not connected, attempting reconnect...
+[DEBUG] Configuring MQTT and connecting...
+
+[CMD] AT+MQTTUSERCFG=0,1,"","","",0,0,""
+
+OK
+
+[CMD] AT+MQTTCONN=0,"",,1
+
+ERROR
+[DEBUG] MQTT connect may have failed
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"target_temp\":21}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"target_temp\":21}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"target_temp\":21}",0,0
+
+ERROR
+[DEBUG] Reconnect: trying saved WiFi...
+[DEBUG] Trying to connect with saved WiFi...
+
+[CMD] AT+CWMODE=1
+
+OK
+
+[CMD] AT+CWAUTOCONN=1
+
+OK
+[DEBUG] Waiting for WIFI CONNECTED...
+[DEBUG] Timeout waiting for WIFI CONNECTED
+[DEBUG] MQTT not connected, attempting reconnect...
+[DEBUG] Configuring MQTT and connecting...
+
+[CMD] AT+MQTTUSERCFG=0,1,"","","",0,0,""
+
+OK
+
+[CMD] AT+MQTTCONN=0,"",,1
+
+ERROR
+[DEBUG] MQTT connect may have failed
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"temperature\":30.2}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"temperature\":30.2}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"temperature\":30.2}",0,0
+
+ERROR
+[DEBUG] MQTT not connected, attempting reconnect...
+[DEBUG] Configuring MQTT and connecting...
+
+[CMD] AT+MQTTUSERCFG=0,1,"","","",0,0,""
+
+OK
+
+[CMD] AT+MQTTCONN=0,"",,1
+
+ERROR
+[DEBUG] MQTT connect may have failed
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"target_temp\":21}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"target_temp\":21}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"target_temp\":21}",0,0
+
+ERROR
+[DEBUG] Reconnect: trying saved WiFi...
+[DEBUG] Trying to connect with saved WiFi...
+
+[CMD] AT+CWMODE=1
+
+OK
+
+[CMD] AT+CWAUTOCONN=1
+
+OK
+[DEBUG] Waiting for WIFI CONNECTED...
+[DEBUG] Timeout waiting for WIFI CONNECTED
+[DEBUG] MQTT not connected, attempting reconnect...
+[DEBUG] Configuring MQTT and connecting...
+
+[CMD] AT+MQTTUSERCFG=0,1,"","","",0,0,""
+
+OK
+
+[CMD] AT+MQTTCONN=0,"",,1
+
+ERROR
+[DEBUG] MQTT connect may have failed
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"temperature\":30.2}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"temperature\":30.2}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"temperature\":30.2}",0,0
+
+ERROR
+[DEBUG] MQTT not connected, attempting reconnect...
+[DEBUG] Configuring MQTT and connecting...
+
+[CMD] AT+MQTTUSERCFG=0,1,"","","",0,0,""
+
+OK
+
+[CMD] AT+MQTTCONN=0,"",,1
+
+ERROR
+[DEBUG] MQTT connect may have failed
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"target_temp\":21}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"target_temp\":21}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"target_temp\":21}",0,0
+
+ERROR
+[DEBUG] Reconnect: trying saved WiFi...
+[DEBUG] Trying to connect with saved WiFi...
+
+[CMD] AT+CWMODE=1
+
+OK
+
+[CMD] AT+CWAUTOCONN=1
+
+OK
+[DEBUG] Waiting for WIFI CONNECTED...
+[DEBUG] Timeout waiting for WIFI CONNECTED
+[DEBUG] MQTT not connected, attempting reconnect...
+[DEBUG] Configuring MQTT and connecting...
+
+[CMD] AT+MQTTUSERCFG=0,1,"","","",0,0,""
+
+OK
+
+[CMD] AT+MQTTCONN=0,"",,1
+
+ERROR
+[DEBUG] MQTT connect may have failed
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"temperature\":30.4}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"temperature\":30.4}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"temperature\":30.4}",0,0
+
+ERROR
+[DEBUG] MQTT not connected, attempting reconnect...
+[DEBUG] Configuring MQTT and connecting...
+
+[CMD] AT+MQTTUSERCFG=0,1,"","","",0,0,""
+
+OK
+
+[CMD] AT+MQTTCONN=0,"",,1
+
+ERROR
+[DEBUG] MQTT connect may have failed
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"target_temp\":21}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"target_temp\":21}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"target_temp\":21}",0,0
+
+ERROR
+[DEBUG] Reconnect: trying saved WiFi...
+[DEBUG] Trying to connect with saved WiFi...
+
+[CMD] AT+CWMODE=1
+
+OK
+
+[CMD] AT+CWAUTOCONN=1
+
+OK
+[DEBUG] Waiting for WIFI CONNECTED...
+[DEBUG] Timeout waiting for WIFI CONNECTED
+[DEBUG] MQTT not connected, attempting reconnect...
+[DEBUG] Configuring MQTT and connecting...
+
+[CMD] AT+MQTTUSERCFG=0,1,"","","",0,0,""
+
+OK
+
+[CMD] AT+MQTTCONN=0,"",,1
+
+ERROR
+[DEBUG] MQTT connect may have failed
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"temperature\":30.3}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"temperature\":30.3}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"temperature\":30.3}",0,0
+
+ERROR
+[DEBUG] MQTT not connected, attempting reconnect...
+[DEBUG] Configuring MQTT and connecting...
+
+[CMD] AT+MQTTUSERCFG=0,1,"","","",0,0,""
+
+OK
+
+[CMD] AT+MQTTCONN=0,"",,1
+
+ERROR
+[DEBUG] MQTT connect may have failed
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"target_temp\":21}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"target_temp\":21}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"target_temp\":21}",0,0
+
+ERROR
+[DEBUG] Reconnect: trying saved WiFi...
+[DEBUG] Trying to connect with saved WiFi...
+
+[CMD] AT+CWMODE=1
+
+OK
+
+[CMD] AT+CWAUTOCONN=1
+
+OK
+[DEBUG] Waiting for WIFI CONNECTED...
+[DEBUG] Timeout waiting for WIFI CONNECTED
+[DEBUG] MQTT not connected, attempting reconnect...
+[DEBUG] Configuring MQTT and connecting...
+
+[CMD] AT+MQTTUSERCFG=0,1,"","","",0,0,""
+
+OK
+
+[CMD] AT+MQTTCONN=0,"",,1
+
+ERROR
+[DEBUG] MQTT connect may have failed
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"temperature\":30.4}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"temperature\":30.4}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"temperature\":30.4}",0,0
+
+ERROR
+[DEBUG] MQTT not connected, attempting reconnect...
+[DEBUG] Configuring MQTT and connecting...
+
+[CMD] AT+MQTTUSERCFG=0,1,"","","",0,0,""
+
+OK
+
+[CMD] AT+MQTTCONN=0,"",,1
+
+ERROR
+[DEBUG] MQTT connect may have failed
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"target_temp\":21}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"target_temp\":21}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"target_temp\":21}",0,0
+
+ERROR
+[DEBUG] Reconnect: trying saved WiFi...
+[DEBUG] Trying to connect with saved WiFi...
+
+[CMD] AT+CWMODE=1
+
+OK
+
+[CMD] AT+CWAUTOCONN=1
+
+OK
+[DEBUG] Waiting for WIFI CONNECTED...
+[DEBUG] Timeout waiting for WIFI CONNECTED
+[DEBUG] MQTT not connected, attempting reconnect...
+[DEBUG] Configuring MQTT and connecting...
+
+[CMD] AT+MQTTUSERCFG=0,1,"","","",0,0,""
+
+OK
+
+[CMD] AT+MQTTCONN=0,"",,1
+
+ERROR
+[DEBUG] MQTT connect may have failed
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"temperature\":30.4}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"temperature\":30.4}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"temperature\":30.4}",0,0
+
+ERROR
+[DEBUG] MQTT not connected, attempting reconnect...
+[DEBUG] Configuring MQTT and connecting...
+
+[CMD] AT+MQTTUSERCFG=0,1,"","","",0,0,""
+
+OK
+
+[CMD] AT+MQTTCONN=0,"",,1
+
+ERROR
+[DEBUG] MQTT connect may have failed
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"target_temp\":21}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"target_temp\":21}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"target_temp\":21}",0,0
+
+ERROR
+[DEBUG] Reconnect: trying saved WiFi...
+[DEBUG] Trying to connect with saved WiFi...
+
+[CMD] AT+CWMODE=1
+
+OK
+
+[CMD] AT+CWAUTOCONN=1
+
+OK
+[DEBUG] Waiting for WIFI CONNECTED...
+[DEBUG] Timeout waiting for WIFI CONNECTED
+[DEBUG] MQTT not connected, attempting reconnect...
+[DEBUG] Configuring MQTT and connecting...
+
+[CMD] AT+MQTTUSERCFG=0,1,"","","",0,0,""
+
+OK
+
+[CMD] AT+MQTTCONN=0,"",,1
+
+ERROR
+[DEBUG] MQTT connect may have failed
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"temperature\":30.4}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"temperature\":30.4}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"temperature\":30.4}",0,0
+
+ERROR
+[DEBUG] MQTT not connected, attempting reconnect...
+[DEBUG] Configuring MQTT and connecting...
+
+[CMD] AT+MQTTUSERCFG=0,1,"","","",0,0,""
+
+OK
+
+[CMD] AT+MQTTCONN=0,"",,1
+
+ERROR
+[DEBUG] MQTT connect may have failed
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"target_temp\":21}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"target_temp\":21}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"target_temp\":21}",0,0
+
+ERROR
+[DEBUG] Reconnect: trying saved WiFi...
+[DEBUG] Trying to connect with saved WiFi...
+
+[CMD] AT+CWMODE=1
+
+OK
+
+[CMD] AT+CWAUTOCONN=1
+
+OK
+[DEBUG] Waiting for WIFI CONNECTED...
+[DEBUG] Timeout waiting for WIFI CONNECTED
+[DEBUG] MQTT not connected, attempting reconnect...
+[DEBUG] Configuring MQTT and connecting...
+
+[CMD] AT+MQTTUSERCFG=0,1,"","","",0,0,""
+
+OK
+
+[CMD] AT+MQTTCONN=0,"",,1
+
+ERROR
+[DEBUG] MQTT connect may have failed
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"temperature\":30.3}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"temperature\":30.3}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"temperature\":30.3}",0,0
+
+ERROR
+[DEBUG] MQTT not connected, attempting reconnect...
+[DEBUG] Configuring MQTT and connecting...
+
+[CMD] AT+MQTTUSERCFG=0,1,"","","",0,0,""
+
+OK
+
+[CMD] AT+MQTTCONN=0,"",,1
+
+ERROR
+[DEBUG] MQTT connect may have failed
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"target_temp\":21}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"target_temp\":21}",0,0
+
+ERROR
+
+[CMD] AT+MQTTPUB=0,"attributes","{\"target_temp\":21}",0,0
+
+ERROR
+[DEBUG] Reconnect: trying saved WiFi...
+[DEBUG] Trying to connect with saved WiFi...
+
+[CMD] AT+CWMODE=1
+
+OK
+
+[CMD] AT+CWAUTOCONN=1
+
+OK
+[DEBUG] Waiting for WIFI CONNECTED...

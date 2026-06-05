@@ -134,17 +134,43 @@ void Dis_MPU6050_Data_On_oled()
 
 void Dis_wifi_status_on_oled()
 {
-    // show WiFi status to the right of temperature (clear area then write)
-    char wbuf[32];
-    if (esp_is_wifi_connected())
+    // show WiFi / MQTT status on the bottom line
+    char wbuf[48];
+    int w = esp_is_wifi_connected();
+    int m = esp_is_mqtt_connected();
+    int state = esp_get_wifi_state();
+
+    if (w && m)
     {
-      snprintf(wbuf, sizeof(wbuf), "W:OK");
+        snprintf(wbuf, sizeof(wbuf), "W:OK M:OK");
+    }
+    else if (w)
+    {
+        snprintf(wbuf, sizeof(wbuf), "W:OK M:--");
     }
     else
     {
-      snprintf(wbuf, sizeof(wbuf), "W:--");
+        // WiFi not connected - show current state
+        switch (state)
+        {
+            case ESP_WIFI_STATE_TRYING_SAVED:
+                snprintf(wbuf, sizeof(wbuf), "W:SV M:--");
+                break;
+            case ESP_WIFI_STATE_SMARTCONFIG:
+                snprintf(wbuf, sizeof(wbuf), "W:SC M:--");
+                break;
+            case ESP_WIFI_STATE_FAILED:
+                snprintf(wbuf, sizeof(wbuf), "W:FAIL M:--");
+                break;
+            case ESP_WIFI_STATE_CONNECTED:
+                snprintf(wbuf, sizeof(wbuf), "W:OK M:--");
+                break;
+            default:
+                snprintf(wbuf, sizeof(wbuf), "W:-- M:--");
+                break;
+        }
     }
-    ssd1306_basic_string(70, 48, wbuf, (uint16_t)strlen(wbuf), Oled_dis_Zhengxian, SSD1306_FONT_12);
+    ssd1306_basic_string(0, 52, wbuf, (uint16_t)strlen(wbuf), Oled_dis_Zhengxian, SSD1306_FONT_12);
 }
 
 void Uart_Send_MPU6050_Data()
