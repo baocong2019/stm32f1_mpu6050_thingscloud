@@ -43,9 +43,9 @@ void thingscloud_init()
     int wifi_result;
     int mqtt_result;
 
-    // DMA reception was already started in main() via esp_start_dma_rx().
+    // DMA reception was already started in main() via esp_start_dma_rx().//中文：DMA接收已经在main()中启动，这里不需要重新启动
     // Do NOT restart it here — that would reset esp_dma_last_pos and cause
-    // data loss in the circular DMA buffer.
+    // data loss in the circular DMA buffer.//中文：这里不需要重新启动DMA接收，因为DMA接收缓冲区已经设置为esp_dma_rx大小，重新启动会重置esp_dma_last_pos，导致数据丢失
 
     // ====== Phase 1: WiFi Auto-Connect ======
     ssd1306_basic_clear();

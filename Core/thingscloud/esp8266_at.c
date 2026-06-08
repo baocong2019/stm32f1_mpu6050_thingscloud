@@ -156,7 +156,7 @@ int esp_wait_for_wifi_connected(uint32_t timeout_ms)
 
         if (g_wifi_connected)
         {
-            debug_print("[DEBUG] WIFI CONNECTED detected!\r\n");
+            debug_print("[DEBUG] WIFI CONNECTED detected!\r\n");//中文：检测到WIFI CONNECTED URC
             return 0;
         }
     }
@@ -324,7 +324,7 @@ int esp_init_and_connect_wifi(const char *ssid, const char *password)
 
 void esp_start_dma_rx(void)
 {
-    // start circular DMA reception into esp_dma_rx
+    // start circular DMA reception into esp_dma_rx 中文：启动DMA接收，将数据接收缓冲区设置为esp_dma_rx大小
     HAL_UART_Receive_DMA(&huart1, esp_dma_rx, ESP_DMA_RX_SIZE);
     esp_dma_last_pos = 0;
 }
