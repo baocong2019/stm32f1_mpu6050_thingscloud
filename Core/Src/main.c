@@ -117,18 +117,19 @@ void Get_MPU6050_Data()
 
 void Dis_MPU6050_Data_On_oled()
 {
-    // snprintf(buf, sizeof(buf), "Ax:%6d Ay:%6d", accel_raw[0], accel_raw[1]);
-    // ssd1306_basic_string(0, 0, buf, (uint16_t)strlen(buf), Oled_dis_Zhengxian, SSD1306_FONT_12);
+    int target;
 
-    // snprintf(buf, sizeof(buf), "Az:%6d Gx:%6d", accel_raw[2], gyro_raw[0]);
-    // ssd1306_basic_string(0, 16, buf, (uint16_t)strlen(buf), Oled_dis_Zhengxian, SSD1306_FONT_12);
+    // 第1行 (y=0): 目标温度（云平台下发的设定值）
+    target = thingscloud_get_target_temp();
+    ssd1306_basic_rect(0, 32, 127, 32+15, 0);  // 清除第1行残留
+    snprintf(buf, sizeof(buf), "Target:%dC", target);
+    ssd1306_basic_string(0, 32, buf, (uint16_t)strlen(buf), Oled_dis_Zhengxian, SSD1306_FONT_12);
 
-    // snprintf(buf, sizeof(buf), "Gy:%6d Gz:%6d", gyro_raw[1], gyro_raw[2]);
-    // ssd1306_basic_string(0, 32, buf, (uint16_t)strlen(buf), Oled_dis_Zhengxian, SSD1306_FONT_12);
-
+    // 第2行 (y=16): 当前温度（MPU6050实时读数）
+    ssd1306_basic_rect(0, 16, 127, 31, 0);  // 清除第2行残留
     temp_tenth = (int)(temp_deg * 10.0f + (temp_deg >= 0 ? 0.5f : -0.5f));
     snprintf(buf, sizeof(buf), "T:%d.%dC", temp_tenth / 10, abs(temp_tenth % 10));
-    ssd1306_basic_string(0, 48, buf, (uint16_t)strlen(buf), Oled_dis_Zhengxian, SSD1306_FONT_12);
+    ssd1306_basic_string(0, 16, buf, (uint16_t)strlen(buf), Oled_dis_Zhengxian, SSD1306_FONT_12);
 }
 
 
@@ -153,11 +154,17 @@ void Dis_wifi_status_on_oled()
         // WiFi not connected - show current state
         switch (state)
         {
-            case ESP_WIFI_STATE_TRYING_SAVED:
+            case ESP_WIFI_STATE_TRYING_SAVED:   // Phase 1: 尝试已保存WiFi
                 snprintf(wbuf, sizeof(wbuf), "W:SV M:--");
                 break;
-            case ESP_WIFI_STATE_SMARTCONFIG:
+            case ESP_WIFI_STATE_TRYING_DEFAULT: // Phase 2: 尝试默认WiFi
+                snprintf(wbuf, sizeof(wbuf), "W:DF M:--");
+                break;
+            case ESP_WIFI_STATE_SMARTCONFIG:     // Phase 3: 智能配网中
                 snprintf(wbuf, sizeof(wbuf), "W:SC M:--");
+                break;
+            case ESP_WIFI_STATE_GOT_CRED:        // SmartConfig已获取凭证，正在连接
+                snprintf(wbuf, sizeof(wbuf), "W:GOT M:--");
                 break;
             case ESP_WIFI_STATE_FAILED:
                 snprintf(wbuf, sizeof(wbuf), "W:FAIL M:--");
